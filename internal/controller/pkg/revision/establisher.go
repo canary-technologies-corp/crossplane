@@ -288,6 +288,13 @@ func (e *APIEstablisher) validate(ctx context.Context, objs []runtime.Object, pa
 				return errors.New(errAssertResourceObj)
 			}
 
+			// Refuse incomplete managed resource definitions before we write
+			// them, so that truncated package content cannot replace a good
+			// definition in the API server.
+			if err := checkManagedResourceDefinition(res); err != nil {
+				return err
+			}
+
 			if control {
 				if err := e.enrichControlledResource(res, webhookTLSCert, parent); err != nil {
 					return err
